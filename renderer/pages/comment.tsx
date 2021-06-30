@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Mastodon from 'mastodon-api';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
+import { HTMLElementEvent } from '../interfaces';
 
-let comments = [];
+let comments: Array<JSX.Element> = [];
 let mstdn;
-let isGetMastodon = true;
+let isGetMastodon: boolean = true;
 
 function Comment() {
 	const router = useRouter();
@@ -12,7 +13,7 @@ function Comment() {
 		try{
 			mstdn = new Mastodon({
 				access_token: router.query.token,
-				api_url: router.query.url + '/api/v1',
+				api_url: router.query.url + '/api/v1/',
 			})
 		}catch(err){
 			isGetMastodon = false;
@@ -28,17 +29,18 @@ function Comment() {
 		<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
 		</div>
 	)
-	const [isStreaming, setStreaming] = useState(false);
-	const [isDisplayHint, setDisplayHint] = useState(true);
-	const [tlName, setTLName] = useState("none");
-	const [hintPocket, setHintPocket] = useState([helptext]);
-	const [timelineView, SetTLView] = useState([(
+	const [isStreaming, setStreaming] = useState<boolean>(false);
+	const [isDisplayHint, setDisplayHint] = useState<boolean>(true);
+	const [tlName, setTLName] = useState<string>("none");
+	const [hintPocket, setHintPocket] = useState<Array<JSX.Element>>([helptext]);
+	const [timelineView, SetTLView] = useState<Array<JSX.Element>>([(
 		<small key="456" className="timelinename">Timeline: none</small>
 	)]);
-	const [commentCnt, setCommentCnt] = useState(0);
+	const [commentCnt, setCommentCnt] = useState<number>(0);
 	let listener;
 
-	const chooseTimeLine = (e) => {
+
+	const chooseTimeLine = (e: HTMLElementEvent<HTMLInputElement>) => {
 		if(e.ctrlKey && e.altKey && e.code === 'KeyL'){
 			alert("ローカルタイムラインの監視を開始します")
 			streamStart('streaming/public/local')
@@ -102,11 +104,11 @@ function Comment() {
 		}
 	}
 
-	const getRandomInt = (max) => {
+	const getRandomInt: (max: number) => number = (max: number) => {
 		return Math.floor(Math.random() * Math.floor(max));
 	}
 
-	const rewrite = (txt) => {
+	const rewrite: (str: string) => string = (txt: string) => {
 		const e = document.createElement('div')
 		e.innerHTML = txt
 		return e.innerText
@@ -120,9 +122,9 @@ function Comment() {
 		}
 	}
 
-	const streamStart = (streamURL) => {
-		streamStop();
+	const streamStart = (streamURL: string) => {
 		console.log('Start streaming');
+		console.log(mstdn);
 		listener = mstdn.stream(streamURL);
 		setStreaming(true);
 		listener.on('message', (msg) => {
@@ -131,9 +133,9 @@ function Comment() {
 					if(rewrite(msg.data.content).length === 0){
 						return;
 					}else{
-						let newtoot = rewrite(msg.data.content);
+						let newtoot: String = rewrite(msg.data.content);
 						let account = getName(msg.data.account);
-						let comment = (
+						let comment: JSX.Element = (
 							<div key={msg.data.id} 
 							style={{marginTop: String(getRandomInt(11) * 5)+`%`}} 
 							className="comment">

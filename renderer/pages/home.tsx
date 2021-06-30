@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React, { ChangeEventHandler, useState } from 'react';
 import { Button, InputGroup, FormControl} from 'react-bootstrap';
 import Mastodon from 'mastodon-api';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
+import { HTMLElementEvent } from '../interfaces';
 
 function Home() {
-	const router = useRouter();
-    const [url, setUrl] = useState('https://mastodon.compositecomputer.club');
-    const [key, setKey] = useState();
-    const [client_id, setId] = useState();
-    const [client_secret, setSecret] = useState();
-    const [isHealth, setHealth] = useState(false);
-    let token;
+	const router: NextRouter = useRouter();
+    const [url, setUrl] = useState<string>('https://mastodon.compositecomputer.club');
+    const [key, setKey] = useState<string>();
+    const [client_id, setId] = useState<string>();
+    const [client_secret, setSecret] = useState<string>();
+    const [isHealth, setHealth] = useState<boolean>(false);
+    let token: string;
 	let mstdn;
 
     const hundleSubmitInstance = (e) => {
-		e.preventDefault()
-		let instanceURL = url;
+		e.preventDefault();
+		let instanceURL: string = url;
 		if(instanceURL.substr(-1) === '/'){
 			instanceURL = instanceURL.substr(0, instanceURL.length-1)
 			setUrl(instanceURL)
@@ -23,8 +24,8 @@ function Home() {
 		Mastodon.createOAuthApp(instanceURL + '/api/v1/apps', 'NicoCommeDon')
 		.catch(err => console.error(err))
 		.then((res) => {
-			let tmpId;
-			let tmpSec;
+			let tmpId: string;
+			let tmpSec: string;
 			try{
 				setId(res.client_id);
 				setSecret(res.client_secret);
@@ -39,9 +40,9 @@ function Home() {
 		.then(url => {
 			if(url === null)
 				return;
-			let savedUrl = url;
+			let savedUrl: string = url;
 			let axios = require('axios');
-			let infoUrl = instanceURL + '/api/v1/streaming/health'
+			let infoUrl: string = instanceURL + '/api/v1/streaming/health'
 			axios.get(infoUrl)
 			.then((res) => {
 				if(res.data === 'OK')
