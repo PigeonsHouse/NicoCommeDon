@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { Button, InputGroup, FormControl} from 'react-bootstrap';
+import Mastodon from 'mastodon-api';
+import { useRouter } from 'next/router';
+
+function Home() {
+	const router = useRouter();
+    const [url, setUrl] = useState('https://mastodon.compositecomputer.club');
+    const [key, setKey] = useState();
+    const [client_id, setId] = useState();
+    const [client_secret, setSecret] = useState();
+    const [isHealth, setHealth] = useState(false);
+    let token;
+	let mstdn;
+
+    const hundleSubmitInstance = (e) => {
+		e.preventDefault()
+		let instanceURL = url;
+		if(instanceURL.substr(-1) === '/'){
+			instanceURL = instanceURL.substr(0, instanceURL.length-1)
+			setUrl(instanceURL)
+		}
+		Mastodon.createOAuthApp(instanceURL + '/api/v1/apps', 'NicoCommeDon')
+		.catch(err => console.error(err))
+		.then((res) => {
+			let tmpId;
+			let tmpSec;
+			try{
+				setId(res.client_id);
+				setSecret(res.client_secret);
+				tmpId = res.client_id;
+				tmpSec = res.client_secret;
+			}catch(err){
+				alert("URLが間違っている可能性があります。");
+				return null;
+			}
+			return Mastodon.getAuthorizationUrl(tmpId, tmpSec, url);
+		})
+		.then(url => {
+			if(url === null)
+				return;
+			let savedUrl = url;
+			let axios = require('axios');
+			let infoUrl = instanceURL + '/api/v1/streaming/health'
+			axios.get(infoUrl)
+			.then((res) => {
+				if(res.data === 'OK')
+					setHealth(true);
+				window.open(savedUrl, "てすと");
+			})
+			.catch((err) => {
+				console.error(err.message);
+			})
+		})
+    }
+
+    const hundleSubmitKey = (e) => {
+		e.preventDefault()
+		Mastodon.getAccessToken(client_id, client_secret, key, url)
+		.catch(err => console.error(err.data))
+		.then(accessToken => {
+			if(!isHealth){
+				alert("インスタンスがNicoCommeDonに対応していない可能性があります。");
+				return;
+			}
+			try {
+				token = accessToken
+				mstdn = new Mastodon({
+					access_token: token,
+					api_url: url + '/api/v1/',
+				})
+			} catch (err) {
+				alert("認証コードが間違っている可能性があります。");
+				return;
+			}
+			console.log(client_id, client_secret, key, token, url+'/api/v1/', mstdn);
+			router.push({
+				pathname: "/comment",
+				query: {
+					token: token,
+					url: url
+				}
+			})
+		})
+    }
+
+    const hundleURLChange = (e) => {
+	    setUrl(e.target.value);
+    }
+
+    const hundleKeyChange = (e) => {
+	    setKey(e.target.value);
+    }
+
+    return (
+        <div id="tokenPage" className="bg-light px-lg-5 vh-100 whole">
+            <h1 className="pt-4 text-dark text-center">
+                NicoCommeDon
+            </h1>
+            <p className="text-center">
+				Mastodonに流れるタイムラインのトゥートを某動画サイトのコメントみたいに流すアプリです。<br />
+				グリーンバック上に流れるのでクロマキー抜きしてコメントを配信画面に乗っけてみてね。
+            </p>
+            <form
+			onSubmit={hundleSubmitInstance} 
+			className="px-2 px-lg-5 cannot-drag">
+				<InputGroup className="px-md-5 pt-4 w-100">
+					<InputGroup.Text className="basic-addon3 w-auto d-inline">
+						インスタンスURL
+					</InputGroup.Text>
+					<FormControl
+					placeholder="Prease input InstanceURL"
+					aria-label="Prease input InstanceURL"
+					aria-describedby="basic-addon3"
+					value={url}
+					onChange={hundleURLChange}
+					/>
+					<InputGroup.Append>
+						<Button variant="outline-secondary" type="submit">認証コードを発行</Button>
+					</InputGroup.Append>
+				</InputGroup>
+            </form>
+            <form 
+            onSubmit={hundleSubmitKey} 
+            className="px-2 px-lg-5 cannot-drag">
+				<InputGroup className="px-md-5 pt-4 w-100">
+					<InputGroup.Text className="basic-addon3 w-auto d-inline">
+						認証コード
+					</InputGroup.Text>
+					<FormControl
+					placeholder="Prease paste here(Ctrl+V)"
+					aria-label="Paste Authentication-Code"
+					aria-describedby="basic-addon3"
+					value={key}
+					onChange={hundleKeyChange}
+					/>
+					<InputGroup.Append>
+						<Button variant="outline-secondary" type="submit" id="jumpCommentPage">コメント画面に移動</Button>
+					</InputGroup.Append>
+				</InputGroup>
+            </form>
+        </div>
+    );
+};
+
+export default Home;

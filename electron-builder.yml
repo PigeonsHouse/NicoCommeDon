@@ -1,0 +1,12 @@
+appId: house.pigeons.nicocommedon
+productName: NicoCommeDon
+copyright: Copyright © 2021 Hayato Shiki
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null

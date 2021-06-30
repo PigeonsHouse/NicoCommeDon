@@ -1,0 +1,62 @@
+.screen{
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+	background-color: #0f0;
+	-webkit-app-region: drag;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.screen::-webkit-scrollbar{
+	display: none;
+}
+.helptext{
+	position: absolute;
+	right: 5px;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+	color: #fff;
+}
+	.timelinename{
+	position: absolute;
+	right: 5px;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	color: #fff;
+}
+@keyframes slide {
+	0% {
+		margin-left: 100%;
+		transform: translateX(0%)
+	}
+	100%{
+		margin-left: 0%;
+		transform: translateX(-100%)
+	}
+}
+.comment {
+	margin-bottom: 0;
+	margin-top: -35px;
+	position: absolute;
+	font-size: 24px;
+	line-height: 1;
+	z-index: 2;
+	color: #fff;
+	text-shadow: -1px -1px #000, 1px -1px #000,	-1px 1px #000, 1px 1px #000;
+	overflow: hidden;
+	white-space: nowrap;
+	animation: 10s linear 0s 1 slide;
+	animation-fill-mode: forwards;
+}
+.p_comment{
+	margin: 0;
+}
+#content{
+	margin-bottom: 0;
+}
+#user{
+	margin-left: 40px;
+	font-size: 15px;
+}

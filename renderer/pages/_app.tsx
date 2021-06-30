@@ -1,0 +1,30 @@
+import {AppProps} from "next/app";
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './home.css'
+import './comment.css'
+
+function MyApp({ Component, pageProps }: AppProps) {
+	return (
+		<>
+			<Component {...pageProps} />
+			<style jsx global>{`
+			html{
+				height: 100%;
+				height: 720px;
+				width: 1280px;
+			}
+			body{
+				margin: 0;
+				height: 100%;
+				overflow-x: hidden;
+				overflow-y: hidden;
+			}
+			.whole{
+				height: 100%;
+			}
+			`}</style>
+		</>
+	)
+}
+
+export default MyApp
