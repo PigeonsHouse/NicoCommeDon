@@ -1,0 +1,60 @@
+.selecter_wrapper {
+	height: 100vh;
+	width: 100vw;
+	background-color: #EEE;
+	-webkit-app-region: drag;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.selecter_wrapper h3 {
+	margin-top: 20px;
+}
+.card_wrapper {
+	height: 75%;
+	width: 80%;
+	background-color: #AAA;
+	display: flex;
+	flex-wrap: wrap;
+	overflow-y: scroll;
+	-webkit-app-region: no-drag;
+	border-radius: 5px;
+}
+.window_item_wrapper {
+	width: 50%;
+	margin: 5px 0;
+	height: 250px;
+}
+.window_item {
+	background-color: #CCC;
+	border-radius: 10px;
+	width: 90%;
+	margin: auto;
+	text-align: center;
+	height: 100%;
+}
+.window_item p {
+	padding: 20px 10px;
+	text-align: center;
+	font-weight: bold;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.window_item video {
+	margin: auto;
+	width: 95%;
+	border-radius: 4px;
+}
+.select_button {
+	width: 100%;
+	text-align: center;
+	-webkit-app-region: no-drag;
+}
+.greenscreen {
+	margin: auto;
+	background-color: #0f0;
+	width: 95%;
+	border-radius: 4px;
+	height: 153px;
+}

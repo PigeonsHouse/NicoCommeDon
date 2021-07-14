@@ -2,10 +2,10 @@
 	position: relative;
 	width: 100vw;
 	height: 100vh;
-	background-color: #0f0;
-	-webkit-app-region: drag;
+	background-color: #0000;
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+	-webkit-app-region: drag;
 }
 .screen::-webkit-scrollbar{
 	display: none;
@@ -59,4 +59,17 @@
 #user{
 	margin-left: 40px;
 	font-size: 15px;
+}
+.video_wrapper{
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	min-width: 100%;
+	min-height: 100%;
+	width: auto;
+	height: auto;
+	z-index: -100;
+	background-size: cover;
+	background-color: #0f0;
+	-webkit-app-region: no-drag;
 }

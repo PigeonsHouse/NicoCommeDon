@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Mastodon from 'mastodon-api';
-import { NextRouter, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { HTMLElementEvent } from '../interfaces';
 
 let comments: Array<JSX.Element> = [];
@@ -26,7 +26,9 @@ function Comment() {
 		<small>Ctrl+Alt+P: 公開タイムラインの監視</small><br />
 		<small>Ctrl+Alt+U: ホームタイムラインの監視</small><br />
 		<small>Ctrl+Alt+L: ローカルタイムラインの監視</small><br />
+		<small>Ctrl+Alt+G: 下に置くウィンドウの選択</small><br />
 		<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
+		<small>Alt+F4: ウィンドウを閉じる</small><br />
 		</div>
 	)
 	const [isStreaming, setStreaming] = useState<boolean>(false);
@@ -38,9 +40,26 @@ function Comment() {
 	)]);
 	const [commentCnt, setCommentCnt] = useState<number>(0);
 	let listener;
+	const mediaDevices = navigator.mediaDevices as any;
+	let childWindow;
 
+	const handleStream = (stream) => {
+		const video = document.querySelector('video')
+		video.srcObject = stream
+		video.onsuspend = () => {
+			handleStream(null)
+		};
+		video.onloadedmetadata = (e) => {
+			console.log(e)
+			video.play()
+		}
+	}
 
 	const chooseTimeLine = (e: HTMLElementEvent<HTMLInputElement>) => {
+		if(e.ctrlKey && e.altKey && e.code === 'KeyG'){
+			if (!childWindow)
+				childWindow = window.open('/select');
+		}
 		if(e.ctrlKey && e.altKey && e.code === 'KeyL'){
 			alert("ローカルタイムラインの監視を開始します")
 			streamStart('streaming/public/local')
@@ -157,12 +176,13 @@ function Comment() {
 			}
 		})
 	}
+
 	if(isGetMastodon){
 		useEffect(() => {
-			window.addEventListener('keydown', chooseTimeLine);
-			return () => {
-				window.removeEventListener('keydown', chooseTimeLine);
-			};
+				window.addEventListener('keydown', chooseTimeLine);
+				return () => {
+					window.removeEventListener('keydown', chooseTimeLine);
+				}
 		}, [chooseTimeLine]);
 	}
 
@@ -174,9 +194,54 @@ function Comment() {
 		}
 	}
 
+	async function setVideo(message) {
+		if (childWindow){
+			childWindow.close();
+			childWindow = null;
+		}
+		let window_id = message.data;
+		if (window_id === 'keep-id') return
+		try {
+			const stream = await mediaDevices.getUserMedia({
+				audio: false,
+				video: {
+					mandatory: {
+						chromeMediaSource: 'desktop',
+						chromeMediaSourceId: window_id,
+						minWidth: 1280,
+						maxWidth: 1280,
+						minHeight: 720,
+						maxHeight: 720,
+					},
+				}
+			})
+			handleStream(stream)
+			return
+		} catch (e) {
+			console.error(e);
+		}
+		handleStream(null);
+	}
+
+	useEffect(()=>{
+		window.addEventListener('message', setVideo);
+		return () => {
+			window.removeEventListener('message', setVideo)
+		}
+	},[setVideo])
+
+	useEffect(() => {
+		window.addEventListener('keydown', chooseTimeLine);
+		return () => {
+			window.removeEventListener('keydown', chooseTimeLine);
+		}
+	}, [chooseTimeLine]);
+
 	return(
 		isGetMastodon ? (
 			<>
+				<video autoPlay playsInline width="1280" height="720" className="video_wrapper" >
+				</video>
 				<div className='screen'>
 				{
 					comments.map((comment) => {

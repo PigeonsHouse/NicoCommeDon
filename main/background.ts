@@ -20,11 +20,11 @@ if (isProd) {
     alwaysOnTop: true,
     resizable: false,
     minimizable: false,
-    useContentSize: true,
+    useContentSize: true
   });
 
   const handleUrlOpen = (e, url)=>{
-    if( url.match(/^http/)){
+    if( url.match('https://mastodon.compositecomputer.club/')){
       e.preventDefault()
       shell.openExternal(url)
     }

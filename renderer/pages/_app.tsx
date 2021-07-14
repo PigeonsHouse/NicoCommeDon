@@ -1,7 +1,9 @@
 import {AppProps} from "next/app";
 import 'bootstrap/dist/css/bootstrap.min.css'
+import './styles/global.css'
 import './styles/home.css'
 import './styles/comment.css'
+import './styles/select.css'
 
 function MyApp({ Component, pageProps }: AppProps) {
 	return (
