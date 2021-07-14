@@ -3,6 +3,8 @@ import Mastodon from 'mastodon-api';
 import { useRouter } from 'next/router';
 import { HTMLElementEvent } from '../interfaces';
 
+const isProd: boolean = process.env.NODE_ENV === 'production';
+const selectURL = (isProd)?'app://./select.html':'/select'
 let comments: Array<JSX.Element> = [];
 let mstdn;
 let isGetMastodon: boolean = true;
@@ -40,7 +42,7 @@ function Comment() {
 	)]);
 	const [commentCnt, setCommentCnt] = useState<number>(0);
 	let listener;
-	const mediaDevices = navigator.mediaDevices as any;
+	let mediaDevices;
 	let childWindow;
 
 	const handleStream = (stream) => {
@@ -57,8 +59,14 @@ function Comment() {
 
 	const chooseTimeLine = (e: HTMLElementEvent<HTMLInputElement>) => {
 		if(e.ctrlKey && e.altKey && e.code === 'KeyG'){
-			if (!childWindow)
-				childWindow = window.open('/select');
+			console.log(selectURL)
+			if(childWindow)
+				childWindow = childWindow.closed?null:childWindow
+			if (!childWindow){
+				let vw = screen.availWidth - 800;
+				let vh = screen.availHeight - 600;
+				childWindow = window.open(selectURL, 'new', 'width=800,height=600');
+			}
 		}
 		if(e.ctrlKey && e.altKey && e.code === 'KeyL'){
 			alert("ローカルタイムラインの監視を開始します")
@@ -177,15 +185,6 @@ function Comment() {
 		})
 	}
 
-	if(isGetMastodon){
-		useEffect(() => {
-				window.addEventListener('keydown', chooseTimeLine);
-				return () => {
-					window.removeEventListener('keydown', chooseTimeLine);
-				}
-		}, [chooseTimeLine]);
-	}
-
 	const streamStop = () => {
 		if(isStreaming){
 			console.log('Stop streaming')
@@ -223,6 +222,13 @@ function Comment() {
 		handleStream(null);
 	}
 
+	useEffect(() => {
+		mediaDevices = navigator.mediaDevices as any;
+	}, [])
+
+	useEffect(() => {
+	})
+
 	useEffect(()=>{
 		window.addEventListener('message', setVideo);
 		return () => {
@@ -230,12 +236,14 @@ function Comment() {
 		}
 	},[setVideo])
 
-	useEffect(() => {
-		window.addEventListener('keydown', chooseTimeLine);
-		return () => {
-			window.removeEventListener('keydown', chooseTimeLine);
-		}
-	}, [chooseTimeLine]);
+	if(isGetMastodon){
+		useEffect(() => {
+				window.addEventListener('keydown', chooseTimeLine);
+				return () => {
+					window.removeEventListener('keydown', chooseTimeLine);
+				}
+		}, [chooseTimeLine]);
+	}
 
 	return(
 		isGetMastodon ? (
