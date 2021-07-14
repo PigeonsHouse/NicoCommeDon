@@ -2,7 +2,7 @@
   "private": true,
   "name": "nico-comme-don",
   "description": "ニコニコのコメントみたいにMastodonの投稿を流すツール",
-  "version": "0.7.5",
+  "version": "1.0.0",
   "author": "Hayato Shiki <twitter @PigeonsHouse>",
   "main": "app/background.js",
   "scripts": {

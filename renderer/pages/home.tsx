@@ -100,7 +100,7 @@ function Home() {
             </h1>
             <p className="text-center">
 				Mastodonに流れるタイムラインのトゥートを某動画サイトのコメントみたいに流すアプリです。<br />
-				グリーンバック上に流れるのでクロマキー抜きしてコメントを配信画面に乗っけてみてね。
+				グリーンバックや選択した画面にコメントを流れるので配信してみてね。
             </p>
             <form
 			onSubmit={hundleSubmitInstance} 
