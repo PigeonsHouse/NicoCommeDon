@@ -1,6 +1,6 @@
-#tokenPage{
+.tokenPage{
 	-webkit-app-region: drag;
 }
-.cannot-drag{
+.cannotDrag{
 	-webkit-app-region: no-drag;
 }

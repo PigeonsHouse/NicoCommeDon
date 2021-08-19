@@ -1,6 +1,6 @@
-const { desktopCapturer } = require('electron');
-
 import React, { useEffect, useState } from 'react';
+import style from '../styles/select.module.css';
+const { desktopCapturer } = require('electron');
 
 function Select() {
 	const [srcs, setSrcs] = useState([]);
@@ -33,13 +33,13 @@ function Select() {
 	}, [])
 
 	return (
-		<div className="selecter_wrapper">
+		<div className={style.selectorWrapper}>
 			<h3>Please select window</h3>
-			<div className="card_wrapper">
-				<div className="window_item_wrapper">
-					<div className="window_item" onClick={selectWindow} data-src={undefined}>
+			<div className={style.cardWrapper}>
+				<div className={style.windowItemWrapper}>
+					<div className={style.windowItem} onClick={selectWindow} data-src={undefined}>
 						<p >グリーンスクリーン</p>
-						<div className='thumbnail greenscreen' ></div>
+						<div className={style.greenScreen+' thumbnail'} ></div>
 					</div>
 				</div>
 				{srcs.map((src)=>{
@@ -52,16 +52,16 @@ function Select() {
 								mandatory: {
 									chromeMediaSource: 'desktop',
 									chromeMediaSourceId: src.id,
-									minWidth: 640,
-									maxWidth: 640,
-									minHeight: 360,
-									maxHeight: 360,
+									minWidth: 1280,
+									maxWidth: 1280,
+									minHeight: 720,
+									maxHeight: 720,
 								},
 							}
 						}).then((stream) => handleStream(src.id, stream))
 						return (
-							<div className="window_item_wrapper">
-								<div className="window_item" onClick={selectWindow} data-id={src.id}>
+							<div className={style.windowItemWrapper}>
+								<div className={style.windowItem} onClick={selectWindow} data-id={src.id}>
 									<p key={src.id}>{src.name}</p>
 									<video className='thumbnail' id={'thumb_'+src.id} ></video>
 								</div>
@@ -70,7 +70,7 @@ function Select() {
 					}
 				})}
 			</div>
-			<div className="select_button">
+			<div className={style.selectButton}>
 				<input type="button" value="戻る" onClick={selectWindow} data-id='keep-id' />
 			</div>
 		</div>

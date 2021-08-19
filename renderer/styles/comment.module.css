@@ -10,30 +10,36 @@
 .screen::-webkit-scrollbar{
 	display: none;
 }
-.helptext{
+.helpText{
 	position: absolute;
 	right: 5px;
-	bottom: 0;
+	bottom: 3px;
 	margin: 0;
-	padding: 0;
+	padding: 0 3px;
 	color: #fff;
+	background-color: #0005;
+	border-radius: 3px;
+	/* text-shadow: 0px 0px 5px #000; */
 }
-	.timelinename{
+.timelineName{
 	position: absolute;
-	right: 5px;
-	top: 0;
+	left: 5px;
+	top: 5px;
 	margin: 0;
-	padding: 0;
+	padding: 0 3px;
 	color: #fff;
+	background-color: #0005;
+	border-radius: 3px;
+	/* text-shadow: 0px 0px 5px #000; */
 }
 @keyframes slide {
 	0% {
 		margin-left: 100%;
-		transform: translateX(0%)
+		transform: translateX(0%);
 	}
 	100%{
 		margin-left: 0%;
-		transform: translateX(-100%)
+		transform: translateX(-100%);
 	}
 }
 .comment {
@@ -47,29 +53,44 @@
 	text-shadow: -1px -1px #000, 1px -1px #000,	-1px 1px #000, 1px 1px #000;
 	overflow: hidden;
 	white-space: nowrap;
-	animation: 10s linear 0s 1 slide;
+	animation-name: slide;
+	animation-duration: 10s;
+	animation-timing-function: linear;
 	animation-fill-mode: forwards;
 }
 .p_comment{
 	margin: 0;
 }
-#content{
+.content{
 	margin-bottom: 0;
 }
-#user{
+.user{
 	margin-left: 40px;
 	font-size: 15px;
 }
-.video_wrapper{
+.videoWrapper{
 	position: fixed;
 	right: 0;
 	bottom: 0;
 	min-width: 100%;
 	min-height: 100%;
-	width: auto;
-	height: auto;
+	width: 1280;
+	height: 720;
 	z-index: -100;
 	background-size: cover;
 	background-color: #0f0;
+	-webkit-app-region: no-drag;
+}
+.close {
+	text-decoration: none;
+	font-size: 20px;
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	margin: 0;
+	padding: 0 8px;
+	color: #fff;
+	background-color: #0005;
+	border-radius: 20px;
 	-webkit-app-region: no-drag;
 }

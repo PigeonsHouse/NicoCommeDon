@@ -1,8 +1,8 @@
-import React, { ChangeEventHandler, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, InputGroup, FormControl} from 'react-bootstrap';
 import Mastodon from 'mastodon-api';
 import { NextRouter, useRouter } from 'next/router';
-import { HTMLElementEvent } from '../interfaces';
+import style from '../styles/home.module.css';
 
 function Home() {
 	const router: NextRouter = useRouter();
@@ -14,7 +14,7 @@ function Home() {
     let token: string;
 	let mstdn;
 
-    const hundleSubmitInstance = (e) => {
+    const handleSubmitInstance = (e) => {
 		e.preventDefault();
 		let instanceURL: string = url;
 		if(instanceURL.substr(-1) === '/'){
@@ -55,7 +55,7 @@ function Home() {
 		})
     }
 
-    const hundleSubmitKey = (e) => {
+    const handleSubmitKey = (e) => {
 		e.preventDefault()
 		Mastodon.getAccessToken(client_id, client_secret, key, url)
 		.catch(err => console.error(err.data))
@@ -85,16 +85,16 @@ function Home() {
 		})
     }
 
-    const hundleURLChange = (e) => {
+    const handleURLChange = (e) => {
 	    setUrl(e.target.value);
     }
 
-    const hundleKeyChange = (e) => {
+    const handleKeyChange = (e) => {
 	    setKey(e.target.value);
     }
 
     return (
-        <div id="tokenPage" className="bg-light px-lg-5 vh-100 whole">
+        <div className={style.tokenPage+" bg-light px-lg-5 vh-100 whole"}>
             <h1 className="pt-4 text-dark text-center">
                 NicoCommeDon
             </h1>
@@ -103,18 +103,18 @@ function Home() {
 				グリーンバックや選択した画面にコメントを流れるので配信してみてね。
             </p>
             <form
-			onSubmit={hundleSubmitInstance} 
-			className="px-2 px-lg-5 cannot-drag">
+			onSubmit={handleSubmitInstance} 
+			className={style.cannotDrag+" px-2 px-lg-5"}>
 				<InputGroup className="px-md-5 pt-4 w-100">
 					<InputGroup.Text className="basic-addon3 w-auto d-inline">
 						インスタンスURL
 					</InputGroup.Text>
 					<FormControl
-					placeholder="Prease input InstanceURL"
-					aria-label="Prease input InstanceURL"
+					placeholder="Please input InstanceURL"
+					aria-label="Please input InstanceURL"
 					aria-describedby="basic-addon3"
 					value={url}
-					onChange={hundleURLChange}
+					onChange={handleURLChange}
 					/>
 					<InputGroup.Append>
 						<Button variant="outline-secondary" type="submit">認証コードを発行</Button>
@@ -122,18 +122,18 @@ function Home() {
 				</InputGroup>
             </form>
             <form 
-            onSubmit={hundleSubmitKey} 
-            className="px-2 px-lg-5 cannot-drag">
+            onSubmit={handleSubmitKey} 
+            className={style.cannotDrag+" px-2 px-lg-5"}>
 				<InputGroup className="px-md-5 pt-4 w-100">
 					<InputGroup.Text className="basic-addon3 w-auto d-inline">
 						認証コード
 					</InputGroup.Text>
 					<FormControl
-					placeholder="Prease paste here(Ctrl+V)"
-					aria-label="Paste Authentication-Code"
+					placeholder="Please paste here(Ctrl+V)"
+					aria-label="Paste AuthenticationCode"
 					aria-describedby="basic-addon3"
 					value={key}
-					onChange={hundleKeyChange}
+					onChange={handleKeyChange}
 					/>
 					<InputGroup.Append>
 						<Button variant="outline-secondary" type="submit" id="jumpCommentPage">コメント画面に移動</Button>

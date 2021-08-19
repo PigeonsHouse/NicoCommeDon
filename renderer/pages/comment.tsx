@@ -1,184 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Mastodon from 'mastodon-api';
-import { useRouter } from 'next/router';
-import { HTMLElementEvent } from '../interfaces';
+import style from '../styles/comment.module.css'
+import { NextRouter, useRouter } from 'next/router';
 
-const isProd: boolean = process.env.NODE_ENV === 'production';
-const selectURL = (isProd)?'app://./select.html':'/select'
+const selectURL = (process.env.NODE_ENV === 'production') ? 'app://./select.html' : '/select'
 let comments: Array<JSX.Element> = [];
-let mstdn;
-let isGetMastodon: boolean = true;
 
 function Comment() {
-	const router = useRouter();
+	const router: NextRouter = useRouter();
+	let mstdn = null;
+	let isGetInstance: boolean = false;
+	let isStreaming: boolean = false;
+	let listener;
+	let childWindow: Window;
+	const [appearHint, setAppearHint] = useState<boolean>(true);
+	const [tlName, setTLName] = useState<string>('none');
+	const [commentCount, setCommentCount] = useState<number>(0);
+
 	if(router.query.token && router.query.url){
 		try{
 			mstdn = new Mastodon({
-				access_token: router.query.token,
-				api_url: router.query.url + '/api/v1/',
-			})
+				access_token:router.query.token,
+				api_url: router.query.url + '/api/v1'
+			});
+			isGetInstance = true;
 		}catch(err){
-			isGetMastodon = false;
-		}
-	}else{
-		isGetMastodon = false;
-	}
-	const helptext = (
-		<div key="123" className="helptext">
-		<small>Ctrl+Alt+P: 公開タイムラインの監視</small><br />
-		<small>Ctrl+Alt+U: ホームタイムラインの監視</small><br />
-		<small>Ctrl+Alt+L: ローカルタイムラインの監視</small><br />
-		<small>Ctrl+Alt+G: 下に置くウィンドウの選択</small><br />
-		<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
-		<small>Alt+F4: ウィンドウを閉じる</small><br />
-		</div>
-	)
-	const [isStreaming, setStreaming] = useState<boolean>(false);
-	const [isDisplayHint, setDisplayHint] = useState<boolean>(true);
-	const [tlName, setTLName] = useState<string>("none");
-	const [hintPocket, setHintPocket] = useState<Array<JSX.Element>>([helptext]);
-	const [timelineView, SetTLView] = useState<Array<JSX.Element>>([(
-		<small key="456" className="timelinename">Timeline: none</small>
-	)]);
-	const [commentCnt, setCommentCnt] = useState<number>(0);
-	let listener;
-	let mediaDevices;
-	let childWindow;
-
-	const handleStream = (stream) => {
-		const video = document.querySelector('video')
-		video.srcObject = stream
-		video.onsuspend = () => {
-			handleStream(null)
-		};
-		video.onloadedmetadata = (e) => {
-			console.log(e)
-			video.play()
+			console.error(err);
 		}
 	}
 
-	const chooseTimeLine = (e: HTMLElementEvent<HTMLInputElement>) => {
-		if(e.ctrlKey && e.altKey && e.code === 'KeyG'){
-			console.log(selectURL)
-			if(childWindow)
-				childWindow = childWindow.closed?null:childWindow
-			if (!childWindow){
-				let vw = screen.availWidth - 800;
-				let vh = screen.availHeight - 600;
-				childWindow = window.open(selectURL, 'new', 'width=800,height=600');
+	const getKeyDown = (e) => {
+		if(e.ctrlKey && e.altKey){
+			let localTLName;
+			switch(e.code){
+				case 'KeyG':
+					if(childWindow) childWindow = childWindow.closed ? null : childWindow;
+					if(!childWindow) childWindow = window.open(selectURL, 'nico-comme-don', 'width=800,height=600');
+					break;
+				case 'KeyH':
+					setAppearHint(!appearHint)
+					break;
+				case 'KeyL':
+					alert("ローカルタイムラインの監視を開始します");
+					localTLName = 'public/local'
+					break;
+				case 'KeyP':
+					alert("パブリックタイムラインの監視を開始します");
+					localTLName = 'public'
+					break;
+				case 'KeyU':
+					alert("ホームタイムラインの監視を開始します");
+					localTLName = 'user'
+					break;
 			}
-		}
-		if(e.ctrlKey && e.altKey && e.code === 'KeyL'){
-			alert("ローカルタイムラインの監視を開始します")
-			streamStart('streaming/public/local')
-			setTLName("local");
-			if(isDisplayHint){
-				SetTLView([(
-					<small key="456" className="timelinename">Timeline: local</small>
-				)])
+			if(localTLName){
+				setTLName(localTLName);
+				streamStart('/streaming/' + localTLName);
 			}
-		}
-		if(e.ctrlKey && e.altKey && e.code === 'KeyP'){
-			alert("パブリックタイムラインの監視を開始します")
-			streamStart('streaming/public')
-			setTLName("public");
-			if(isDisplayHint){
-				SetTLView([(
-					<small key="456" className="timelinename">Timeline: public</small>
-				)])
-			}
-		}
-		if(e.ctrlKey && e.altKey && e.code === 'KeyU'){
-			alert("ホームタイムラインの監視を開始します")
-			streamStart('streaming/user')
-			setTLName("user");
-			if(isDisplayHint){
-				SetTLView([(
-					<small key="456" className="timelinename">Timeline: user</small>
-				)])
-			}
-		}
-		if(e.ctrlKey && e.altKey && e.code === 'KeyH'){
-			if(isDisplayHint){
-				setDisplayHint(false);
-				setHintPocket([]);
-				SetTLView([]);
-			}else{
-				setDisplayHint(true)
-				setHintPocket([helptext]);
-				if(tlName === "local"){
-					SetTLView([(
-						<small key="456" className="timelinename">Timeline: local</small>
-					)])
-				}else if(tlName === "public"){
-					SetTLView([(
-						<small key="456" className="timelinename">Timeline: public</small>
-					)])
-				}else if(tlName === "user"){
-					SetTLView([(
-						<small key="456" className="timelinename">Timeline: user</small>
-					)])
-				}else if(tlName === "none"){
-					SetTLView([(
-						<small key="456" className="timelinename">Timeline: none</small>
-					)])
-				}else{
-					SetTLView([(
-						<small key="456" className="timelinename">Timeline: error</small>
-					)])
-				}
-			}
-		}
-	}
-
-	const getRandomInt: (max: number) => number = (max: number) => {
-		return Math.floor(Math.random() * Math.floor(max));
-	}
-
-	const rewrite: (str: string) => string = (txt: string) => {
-		const e = document.createElement('div')
-		e.innerHTML = txt
-		return e.innerText
-	}
-
-	const getName = (account) => {
-		if(account.display_name.length){
-			return account.display_name;
-		} else {
-			return account.username;
 		}
 	}
 
 	const streamStart = (streamURL: string) => {
-		console.log('Start streaming');
-		console.log(mstdn);
+		isStreaming ? streamStop() : null
 		listener = mstdn.stream(streamURL);
-		setStreaming(true);
+		isStreaming = true;
 		listener.on('message', (msg) => {
 			try{
-				if (msg.event === "update"){
-					if(rewrite(msg.data.content).length === 0){
-						return;
-					}else{
-						let newtoot: String = rewrite(msg.data.content);
-						let account = getName(msg.data.account);
-						let comment: JSX.Element = (
-							<div key={msg.data.id} 
-							style={{marginTop: String(getRandomInt(11) * 5)+`%`}} 
-							className="comment">
-								<p className="p_comment" id="content">
-									<img src={msg.data.account.avatar} alt="icon" width="35px" height="35px" style={{borderRadius: `5px`}}></img>{newtoot}
-								</p>
-								<p className="p_comment" id="user">{account}</p>
-							</div>
-						)
-						console.log("old comments: ", comments);
-						comments = [...comments, comment];
-						setCommentCnt( (commentCnt) => commentCnt+1 );
-						console.log("new comments: ", comments);
-					}
+				if(msg.event === 'update' && rewrite(msg.data.content)){
+					let comment: JSX.Element = commentTemplate(msg);
+					comments.push(comment);
+					setCommentCount((commentCount)=> commentCount+1 );
 				}
-			} catch(err) {
+			}catch(err){
 				console.error(err);
 				streamStop();
 			}
@@ -186,48 +79,95 @@ function Comment() {
 	}
 
 	const streamStop = () => {
-		if(isStreaming){
-			console.log('Stop streaming')
-			if(listener)
-				listener.stop()
+		if(isStreaming && listener){
+			listener.stop();
 		}
+	}
+	
+	const commentTemplate = (msg) => {
+		return (
+			<div key={msg.data.id} 
+			style={{marginTop: String(getRandomInt(11) * 5)+`%`}} 
+			className={style.comment}>
+				<p className={style.p_comment+' '+style.content}>
+					<img src={msg.data.account.avatar} alt="icon" width="35px" height="35px" style={{borderRadius: `5px`}}></img>{rewrite(msg.data.content)}
+				</p>
+				<p className={style.p_comment+' '+style.user}>{getName(msg.data.account)}</p>
+			</div>
+		)
+	}
+
+	const getRandomInt = (max: number) => {
+		return Math.floor(Math.random() * Math.floor(max));
+	}
+
+	const rewrite = (txt: string) => {
+		const e = document.createElement('div');
+		e.innerHTML = txt;
+		return e.innerText;
+	}
+
+	const getName = (account) => {
+		return account.display_name.length ? account.display_name : account.username;
+	}
+
+	if(isGetInstance){
+		useEffect(() => {
+				window.addEventListener('keydown', getKeyDown);
+				return () => {
+					window.removeEventListener('keydown', getKeyDown);
+				}
+		}, [getKeyDown]);
 	}
 
 	async function setVideo(message) {
-		if (childWindow){
+		if(childWindow){
 			childWindow.close();
-			childWindow = null;
+			childWindow == null;
 		}
-		let window_id = message.data;
-		if (window_id === 'keep-id') return
-		try {
-			const stream = await mediaDevices.getUserMedia({
+		let windowId = message.data;
+		if(windowId === 'keep-id') return;
+		try{
+			const stream = await (navigator.mediaDevices as any).getUserMedia({
 				audio: false,
 				video: {
 					mandatory: {
 						chromeMediaSource: 'desktop',
-						chromeMediaSourceId: window_id,
+						chromeMediaSourceId: windowId,
 						minWidth: 1280,
 						maxWidth: 1280,
 						minHeight: 720,
 						maxHeight: 720,
 					},
 				}
-			})
-			handleStream(stream)
-			return
-		} catch (e) {
-			console.error(e);
+			});
+			handleStream(stream);
+			return;
+		}catch(err){
+			console.error(err);
 		}
-		handleStream(null);
 	}
 
-	useEffect(() => {
-		mediaDevices = navigator.mediaDevices as any;
-	}, [])
+	const handleStream = (stream: MediaProvider) => {
+		const video = document.querySelector('video');
+		video.srcObject = stream;
+		video.onsuspend = () => {
+			handleStream(null);
+		}
+		video.onloadedmetadata = (e) => {
+			video.play();
+		}
+	}
 
-	useEffect(() => {
-	})
+	const close = () => {
+		console.log("close");
+		if(childWindow){
+			childWindow.close();
+			childWindow == null;
+		}
+		window.close();
+	}
+
 
 	useEffect(()=>{
 		window.addEventListener('message', setVideo);
@@ -236,40 +176,35 @@ function Comment() {
 		}
 	},[setVideo])
 
-	if(isGetMastodon){
-		useEffect(() => {
-				window.addEventListener('keydown', chooseTimeLine);
-				return () => {
-					window.removeEventListener('keydown', chooseTimeLine);
-				}
-		}, [chooseTimeLine]);
-	}
 
-	return(
-		isGetMastodon ? (
+	return (
+		isGetInstance ? (
 			<>
-				<video autoPlay playsInline width="1280" height="720" className="video_wrapper" >
-				</video>
-				<div className='screen'>
-				{
-					comments.map((comment) => {
-					return comment
-					})
-				}{
-					timelineView.map((timelinename) => {
-					return timelinename
-					})
-				}{
-					hintPocket.map((comment) => {
-					return comment
-					})
-				}
+				<video autoPlay playsInline className={style.videoWrapper} />
+				<div className={style.screen}>
+					{comments.map((comment) => {
+						return comment;
+					})}
+					{appearHint ? (
+						<>
+							<small key="timelineInfo" className={style.timelineName}>Timeline: {tlName.slice(tlName.indexOf('/')+1)}</small>
+							<p className={style.close} onClick={close}>×</p>
+							<div key="help" className={style.helpText}>
+								<small>Ctrl+Alt+P: 公開タイムラインの監視</small><br />
+								<small>Ctrl+Alt+U: ホームタイムラインの監視</small><br />
+								<small>Ctrl+Alt+L: ローカルタイムラインの監視</small><br />
+								<small>Ctrl+Alt+G: 下に置くウィンドウの選択</small><br />
+								<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
+								<small>Alt+F4: ウィンドウを閉じる</small><br />
+							</div>
+						</>
+					) : (<></>)}
 				</div>
 			</>
-		):(
+		) : (
 			<></>
 		)
-	);
-};
+	)
+}
 
 export default Comment;

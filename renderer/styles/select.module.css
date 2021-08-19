@@ -1,4 +1,4 @@
-.selecter_wrapper {
+.selectorWrapper {
 	height: 100vh;
 	width: 100vw;
 	background-color: #EEE;
@@ -7,10 +7,10 @@
 	flex-wrap: wrap;
 	justify-content: center;
 }
-.selecter_wrapper h3 {
+.selectorWrapper h3 {
 	margin-top: 20px;
 }
-.card_wrapper {
+.cardWrapper {
 	height: 75%;
 	width: 80%;
 	background-color: #AAA;
@@ -20,12 +20,12 @@
 	-webkit-app-region: no-drag;
 	border-radius: 5px;
 }
-.window_item_wrapper {
+.windowItemWrapper {
 	width: 50%;
 	margin: 5px 0;
 	height: 250px;
 }
-.window_item {
+.windowItem {
 	background-color: #CCC;
 	border-radius: 10px;
 	width: 90%;
@@ -33,7 +33,7 @@
 	text-align: center;
 	height: 100%;
 }
-.window_item p {
+.windowItem p {
 	padding: 20px 10px;
 	text-align: center;
 	font-weight: bold;
@@ -41,17 +41,17 @@
 	overflow: hidden;
 	white-space: nowrap;
 }
-.window_item video {
+.windowItem video {
 	margin: auto;
 	width: 95%;
 	border-radius: 4px;
 }
-.select_button {
+.selectButton {
 	width: 100%;
 	text-align: center;
 	-webkit-app-region: no-drag;
 }
-.greenscreen {
+.greenScreen {
 	margin: auto;
 	background-color: #0f0;
 	width: 95%;

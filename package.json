@@ -2,13 +2,14 @@
   "private": true,
   "name": "nico-comme-don",
   "description": "ニコニコのコメントみたいにMastodonの投稿を流すツール",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Hayato Shiki <twitter @PigeonsHouse>",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
     "build:win64": "nextron build --win --x64",
+    "build:linux": "nextron build --linux",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
