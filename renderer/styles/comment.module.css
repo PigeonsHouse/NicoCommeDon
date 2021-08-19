@@ -93,4 +93,5 @@
 	background-color: #0005;
 	border-radius: 20px;
 	-webkit-app-region: no-drag;
+	cursor: pointer;
 }
