@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Mastodon from 'mastodon-api';
+import Mastodon, { StreamingAPIConnection } from 'mastodon-api';
 import style from '../styles/comment.module.css'
 import { NextRouter, useRouter } from 'next/router';
 
@@ -10,9 +10,10 @@ function Comment() {
 	const router: NextRouter = useRouter();
 	let mstdn = null;
 	let isGetInstance: boolean = false;
-	let isStreaming: boolean = false;
-	let listener;
 	let childWindow: Window;
+	// let listener;
+	const [listener, setListener] = useState<StreamingAPIConnection>();
+	const [isStreaming, setStreaming] = useState<boolean>(false);
 	const [appearHint, setAppearHint] = useState<boolean>(true);
 	const [tlName, setTLName] = useState<string>('none');
 	const [commentCount, setCommentCount] = useState<number>(0);
@@ -52,7 +53,7 @@ function Comment() {
 					alert("ホームタイムラインの監視を開始します");
 					localTLName = 'user'
 					break;
-			}
+			}EventTarget
 			if(localTLName){
 				setTLName(localTLName);
 				streamStart('/streaming/' + localTLName);
@@ -62,25 +63,18 @@ function Comment() {
 
 	const streamStart = (streamURL: string) => {
 		isStreaming ? streamStop() : null
-		listener = mstdn.stream(streamURL);
-		isStreaming = true;
-		listener.on('message', (msg) => {
-			try{
-				if(msg.event === 'update' && rewrite(msg.data.content)){
-					let comment: JSX.Element = commentTemplate(msg);
-					comments.push(comment);
-					setCommentCount((commentCount)=> commentCount+1 );
-				}
-			}catch(err){
-				console.error(err);
-				streamStop();
-			}
-		})
+		setListener(mstdn.stream(streamURL));
+		setStreaming(true);
 	}
 
 	const streamStop = () => {
-		if(isStreaming && listener){
-			listener.stop();
+		console.log(isStreaming);
+		console.log(listener);
+		if(isStreaming){
+			if (listener !== undefined){
+				console.log("stop");
+				listener.stop();
+			}
 		}
 	}
 	
@@ -176,6 +170,23 @@ function Comment() {
 		}
 	},[setVideo])
 
+	useEffect(() => {
+		if(listener !== undefined){	
+			listener.on('message', (msg) => {
+				try{
+					if(msg.event === 'update' && rewrite(msg.data.content)){
+						let comment: JSX.Element = commentTemplate(msg);
+						comments.push(comment);
+						setCommentCount((commentCount)=> commentCount+1 );
+					}
+				}catch(err){
+					console.error(err);
+					streamStop();
+				}
+			})
+		}
+	}, [listener])
+
 
 	return (
 		isGetInstance ? (
@@ -195,7 +206,6 @@ function Comment() {
 								<small>Ctrl+Alt+L: ローカルタイムラインの監視</small><br />
 								<small>Ctrl+Alt+G: 下に置くウィンドウの選択</small><br />
 								<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
-								<small>Alt+F4: ウィンドウを閉じる</small><br />
 							</div>
 						</>
 					) : (<></>)}
