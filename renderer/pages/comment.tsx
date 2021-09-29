@@ -33,30 +33,36 @@ function Comment() {
 	const getKeyDown = (e) => {
 		if(e.ctrlKey && e.altKey){
 			let localTLName;
+			let tootMessage;
+			let res = false;
 			switch(e.code){
 				case 'KeyG':
 					if(childWindow) childWindow = childWindow.closed ? null : childWindow;
 					if(!childWindow) childWindow = window.open(selectURL, 'nico-comme-don', 'width=800,height=600');
 					break;
 				case 'KeyH':
-					setAppearHint(!appearHint)
+					setAppearHint(!appearHint);
 					break;
 				case 'KeyL':
-					alert("ローカルタイムラインの監視を開始します");
-					localTLName = 'public/local'
+					tootMessage = "ローカルタイムラインの監視を開始します。";
+					localTLName = 'public/local';
 					break;
 				case 'KeyP':
-					alert("パブリックタイムラインの監視を開始します");
-					localTLName = 'public'
+					tootMessage = "公開タイムラインの監視を開始します。";
+					localTLName = 'public';
 					break;
 				case 'KeyU':
-					alert("ホームタイムラインの監視を開始します");
-					localTLName = 'user'
+					tootMessage = "ホームタイムラインの監視を開始します。";
+					localTLName = 'user';
 					break;
-			}EventTarget
+			}
 			if(localTLName){
-				setTLName(localTLName);
-				streamStart('/streaming/' + localTLName);
+				res = window.confirm(tootMessage+"\nよろしいでしょうか？");
+				if(res){
+					mstdn.post('/statuses', {status: tootMessage})
+					setTLName(localTLName);
+					streamStart('/streaming/' + localTLName);
+				}
 			}
 		}
 	}
