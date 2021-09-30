@@ -11,7 +11,47 @@ function Comment() {
 	let mstdn = null;
 	let isGetInstance: boolean = false;
 	let childWindow: Window;
-	// let listener;
+	const usableCommandList: Array<string> = [
+		'/invisible',
+		'/ue',
+		'/shita',
+		'/big',
+		'/small',
+		'/red',
+		'/pink',
+		'/orange',
+		'/yellow',
+		'/green',
+		'/cyan',
+		'/blue',
+		'/purple',
+		'/black'
+	];
+	const usablePositionCommandList: Array<string> = usableCommandList.slice(1, 3);
+	const usableSizeCommandList: Array<string> = usableCommandList.slice(3, 5);
+	const usableColorCommandList: Array<string> = usableCommandList.slice(5);
+	const sizeList = {
+		'/big': '32px',
+		'/small': '18px'
+	}
+	const colorCodes = {
+		'/red': '#FF0000',
+		'/pink': '#FF8080',
+		'/orange': '#FFC000',
+		'/yellow': '#FFFF00',
+		'/green': '#00FF00',
+		'/cyan': '#00FFFF',
+		'/blue': '#0000FF',
+		'/purple': '#C000FF',
+		'/black': '#000000'
+	}
+	const styleList = {
+		'/naka': style.middle,
+		'/ue': style.lock,
+		'/shita': style.lock
+	}
+	let currentTopLine = 0;
+	let currentBottomLine = 0;
 	const [listener, setListener] = useState<StreamingAPIConnection>();
 	const [isStreaming, setStreaming] = useState<boolean>(false);
 	const [appearHint, setAppearHint] = useState<boolean>(true);
@@ -84,15 +124,81 @@ function Comment() {
 		}
 	}
 	
+	const getCommandList = (content: string) => {
+		let contentList = content.split(/ |　/);
+		let commandList = [];
+		contentList.map(contentWord => {
+			if(usableCommandList.includes(contentWord) && !commandList.includes(contentWord))
+				commandList.push(contentWord)
+		})
+		return commandList;
+	}
+
+	const deleteCommand = (content: string) => {
+		let commandList = getCommandList(content);
+		let deletingContent = content;
+		commandList.map(command => {
+			deletingContent = deletingContent.replaceAll(command, '');
+		})
+		return deletingContent;
+	}
+
 	const commentTemplate = (msg) => {
+		let commandList = getCommandList(rewrite(msg.data.content));
+		let position = '/naka';
+		let size = '24px';
+		let colorCode = '#FFFFFF';
+		commandList.map(command => {
+			if(usablePositionCommandList.includes(command) && position == '/naka')
+				position = command
+			if(usableSizeCommandList.includes(command) && size == '24px')
+				size = sizeList[command]
+			if(usableColorCommandList.includes(command) && colorCode == '#FFFFFF')
+				colorCode = colorCodes[command]
+		})
+		let stylesheet = styleList[position]
+		let nowColumn;
+		switch(position){
+			case '/naka':
+				nowColumn = getRandomInt(11);
+				break;
+			case '/ue':
+				nowColumn = currentTopLine;
+				currentTopLine++;
+				window.setTimeout(() => {currentTopLine--}, 10000);
+				break;
+			case '/shita':
+				nowColumn = 10 - currentBottomLine;
+				
+				currentBottomLine++;
+				window.setTimeout(() => {currentBottomLine--}, 10000);
+				break;
+		}
 		return (
-			<div key={msg.data.id} 
-			style={{marginTop: String(getRandomInt(11) * 5)+`%`}} 
-			className={style.comment}>
-				<p className={style.p_comment+' '+style.content}>
-					<img src={msg.data.account.avatar} alt="icon" width="35px" height="35px" style={{borderRadius: `5px`}}></img>{rewrite(msg.data.content)}
-				</p>
-				<p className={style.p_comment+' '+style.user}>{getName(msg.data.account)}</p>
+			<div 
+				key={msg.data.id}
+			>
+				<div 
+					className={style.comment + ' ' + stylesheet}
+					style={{marginTop: String(nowColumn * 5)+`%`}}
+				>
+					<p className={style.p_comment+' '+style.content} style={{
+						fontSize: size
+					}}>
+						<img src={msg.data.account.avatar} alt="icon" width="35px" height="35px" style={{borderRadius: `5px`}}></img>
+						<span style={{
+							color: colorCode,
+							fontWeight: 'bold'
+						}}>
+							{deleteCommand(rewrite(msg.data.content))}
+						</span>
+					</p>
+					<p className={style.p_comment+' '+style.user} style={{
+						color: colorCode
+					}}>
+						{getName(msg.data.account)}
+					</p>
+				</div>
 			</div>
 		)
 	}
@@ -102,8 +208,9 @@ function Comment() {
 	}
 
 	const rewrite = (txt: string) => {
+        let edit_txt = txt.replaceAll('</p><p>', ' ').replaceAll('<br />', ' ')
 		const e = document.createElement('div');
-		e.innerHTML = txt;
+		e.innerHTML = edit_txt;
 		return e.innerText;
 	}
 
@@ -180,7 +287,11 @@ function Comment() {
 		if(listener !== undefined){	
 			listener.on('message', (msg) => {
 				try{
-					if(msg.event === 'update' && rewrite(msg.data.content)){
+					let commandList = [];
+					if(msg.event === 'update'){
+						commandList = getCommandList(rewrite(msg.data.content));
+					}
+					if(msg.event === 'update' && rewrite(msg.data.content) && !commandList.includes('/invisible')){
 						let comment: JSX.Element = commentTemplate(msg);
 						comments.push(comment);
 						setCommentCount((commentCount)=> commentCount+1 );

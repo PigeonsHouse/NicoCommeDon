@@ -23,9 +23,12 @@ if (isProd) {
     useContentSize: true
   });
 
-  const handleUrlOpen = (e, url)=>{
-    e.preventDefault()
-    shell.openExternal(url)
+  const handleUrlOpen = (e, url: string)=>{
+    const port = process.argv[2];
+    if(url.indexOf(`http://localhost:${port}`) != 0 && url.indexOf('app') != 0){
+      e.preventDefault()
+      shell.openExternal(url)
+    }
   }
   mainWindow.webContents.on('will-navigate', handleUrlOpen);
   mainWindow.webContents.on('new-window', handleUrlOpen);
