@@ -95,13 +95,21 @@ function Comment() {
 					tootMessage = "ホームタイムラインの監視を開始します。";
 					localTLName = 'user';
 					break;
+				case 'KeyS':
+					tootMessage = "監視を終了します。";
+					localTLName = 'none';
+					break;
 			}
 			if(localTLName){
 				res = window.confirm(tootMessage+"\nよろしいでしょうか？");
 				if(res){
-					mstdn.post('/statuses', {status: tootMessage})
 					setTLName(localTLName);
-					streamStart('/streaming/' + localTLName);
+					if(localTLName === 'none'){
+						streamStop();
+					}else{
+						mstdn.post('/statuses', {status: tootMessage})
+						streamStart('/streaming/' + localTLName);
+					}
 				}
 			}
 		}
@@ -321,6 +329,7 @@ function Comment() {
 								<small>Ctrl+Alt+P: 公開タイムラインの監視</small><br />
 								<small>Ctrl+Alt+U: ホームタイムラインの監視</small><br />
 								<small>Ctrl+Alt+L: ローカルタイムラインの監視</small><br />
+								<small>Ctrl+Alt+S: 監視の終了</small><br />
 								<small>Ctrl+Alt+G: 下に置くウィンドウの選択</small><br />
 								<small>Ctrl+Alt+H: ヒントの表示/非表示</small><br />
 							</div>
