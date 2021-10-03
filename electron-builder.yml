@@ -9,4 +9,8 @@ files:
     filter:
       - package.json
       - app
+linux:
+  target:
+    - deb
+    - rpm
 publish: null
