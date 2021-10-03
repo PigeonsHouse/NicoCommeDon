@@ -1,4 +1,4 @@
-# NicoCommeDon v1.1.0
+# NicoCommeDon v1.1.5
 
 ## NicoCommeDonとは？
 グリーンバック上にMastodonのトゥートがニコニコのコメントみたいに流れていくElectronアプリです．  
