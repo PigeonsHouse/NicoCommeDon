@@ -1,0 +1,128 @@
+name: Electron App Deploy
+
+on:
+  pull_request:
+    types: 
+      - closed
+    branches:
+      - main
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Get package version
+      id: get_package_version
+      run: |
+        package_version=`npx -c 'echo "$npm_package_version"'`
+        echo "::set-output name=package_version::${package_version}"
+
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.get_package_version.outputs.package_version }}
+        release_name: NicoCommeDon_v${{ steps.get_package_version.outputs.package_version }}
+        body: NicoCommeDon v${{ steps.get_package_version.outputs.package_version }}
+        draft: false
+        prerelease: false
+
+  release_linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+
+    - name: Build package
+      run: |
+        npm install -g yarn
+        yarn install
+        yarn build:linux
+
+    - name: Get package version
+      id: get_package_version
+      run: |
+        package_version=`npx -c 'echo "$npm_package_version"'`
+        echo "::set-output name=package_version::${package_version}"
+
+    - name: Get release
+      id: get_release
+      uses: cardinalby/git-get-release-action@v1.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag: v${{ steps.get_package_version.outputs.package_version }}
+
+    - name: Upload release .deb Asset
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./dist/nico-comme-don_${{ steps.get_package_version.outputs.package_version }}_amd64.deb
+        asset_name: nico-comme-don_${{ steps.get_package_version.outputs.package_version }}_amd64.deb
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload release .rpm Asset
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./dist/nico-comme-don-${{ steps.get_package_version.outputs.package_version }}.x86_64.rpm
+        asset_name: nico-comme-don-${{ steps.get_package_version.outputs.package_version }}.x86_64.rpm
+        asset_content_type: application/x-rpm
+
+  release_windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+
+    - name: Build package
+      run: |
+        npm install -g yarn
+        yarn install
+        yarn build:win64
+
+    - name: Get package version
+      id: get_package_version
+      run: |
+        $package_json = Get-Content -Path "./package.json" | ConvertFrom-Json
+        $version = $package_json.version
+        echo "::set-output name=package_version::$version"
+
+    - name: Get release
+      id: get_release
+      uses: cardinalby/git-get-release-action@v1.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag: v${{ steps.get_package_version.outputs.package_version }}
+
+    - name: Upload release .exe Asset
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./dist/NicoCommeDon Setup ${{ steps.get_package_version.outputs.package_version }}.exe
+        asset_name: NicoCommeDon Setup ${{ steps.get_package_version.outputs.package_version }}.exe
+        asset_content_type: application/octet-stream
