@@ -152,6 +152,10 @@ function Comment() {
 	}
 
 	const commentTemplate = (msg) => {
+		let content = deleteCommand(rewrite(msg.data.content));
+		if (content.trim().length == 0) {
+			return
+		}
 		let commandList = getCommandList(rewrite(msg.data.content));
 		let position = '/naka';
 		let size = '24px';
@@ -198,7 +202,7 @@ function Comment() {
 							color: colorCode,
 							fontWeight: 'bold'
 						}}>
-							{deleteCommand(rewrite(msg.data.content))}
+							{content}
 						</span>
 					</p>
 					<p className={style.p_comment+' '+style.user} style={{
