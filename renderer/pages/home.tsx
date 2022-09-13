@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, InputGroup, FormControl} from 'react-bootstrap';
 import Mastodon from 'mastodon-api';
 import { NextRouter, useRouter } from 'next/router';
 import style from '../styles/home.module.css';
+import { ipcRenderer } from 'electron';
 
 function Home() {
 	const router: NextRouter = useRouter();
@@ -93,6 +94,16 @@ function Home() {
 	    setKey(e.target.value);
     }
 
+	useEffect(() => {
+		window.addEventListener('contextmenu', (e) => {
+			e.preventDefault()
+			ipcRenderer.send('show-context-menu')
+		})
+
+		ipcRenderer.on('context-menu-command', (e, command) => {
+		})
+	}, [])
+
     return (
         <div className={style.tokenPage+" bg-light px-lg-5 vh-100 whole"}>
             <h1 className="pt-4 text-dark text-center">
@@ -129,7 +140,7 @@ function Home() {
 						認証コード
 					</InputGroup.Text>
 					<FormControl
-					placeholder="Please paste here(Ctrl+V)"
+					placeholder="Please paste here"
 					aria-label="Paste AuthenticationCode"
 					aria-describedby="basic-addon3"
 					value={key}

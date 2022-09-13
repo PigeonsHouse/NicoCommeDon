@@ -1,5 +1,6 @@
-import { app, shell } from 'electron';
+import { app, shell, ipcMain, Menu, BrowserWindow, PopupOptions } from 'electron';
 import serve from 'electron-serve';
+import { MenuItemConstructorOptions } from 'electron/main';
 import { createWindow } from './helpers';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -44,3 +45,28 @@ if (isProd) {
 app.on('window-all-closed', () => {
   app.quit();
 });
+
+ipcMain.on('show-context-menu', (event) => {
+  const template: Array<MenuItemConstructorOptions> =
+  [
+    {
+      label: 'Copy',
+      role: 'copy',
+      click: () => {
+        console.log('fug')
+        event.sender.send('context-menu-command', 'menu-item-1')
+      }
+    },
+    {
+      label: 'Paste',
+      role: 'paste',
+      click: () => {
+        console.log('fug')
+        event.sender.send('context-menu-command', 'menu-item-1')
+      }
+    },
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  const win = BrowserWindow.fromWebContents(event.sender)
+  menu.popup({window: win})
+})

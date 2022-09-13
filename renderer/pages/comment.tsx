@@ -151,7 +151,37 @@ function Comment() {
 		return deletingContent;
 	}
 
+	const getEmojiTSX = (str: string, emojis, imgpx: number) => {
+		let strParts = str.split(':');
+		let tidyTSX = []
+
+		strParts.map((strPart) => {
+			if (tidyTSX.length == 0 || tidyTSX.slice(-1)[0].type == "img") {
+				tidyTSX.push(<span>{strPart}</span>)
+			} else {
+				tidyTSX.push(<span>{':'+strPart}</span>)
+			}
+			emojis.map(emoji => {
+				if (emoji.shortcode == strPart) {
+					tidyTSX = tidyTSX.slice(0, -1)
+					tidyTSX.push(<img height={imgpx + "px"} src={emoji.url} alt={strPart} />)
+				}
+			});
+		})
+
+		return (<>{tidyTSX}</>)
+	}
+
 	const commentTemplate = (msg) => {
+		let content = deleteCommand(rewrite(msg.data.content)).trim();
+		if (content.length == 0) {
+			return
+		}
+		let userName = getName(msg.data.account);
+
+		let contentTSX = getEmojiTSX(content, msg.data.emojis, 35)
+		let userNameTSX = getEmojiTSX(userName, msg.data.account.emojis, 14)
+
 		let commandList = getCommandList(rewrite(msg.data.content));
 		let position = '/naka';
 		let size = '24px';
@@ -198,13 +228,15 @@ function Comment() {
 							color: colorCode,
 							fontWeight: 'bold'
 						}}>
-							{deleteCommand(rewrite(msg.data.content))}
+							{contentTSX}
 						</span>
 					</p>
 					<p className={style.p_comment+' '+style.user} style={{
 						color: colorCode
 					}}>
-						{getName(msg.data.account)}
+						<span>
+							{userNameTSX}
+						</span>
 					</p>
 				</div>
 			</div>
@@ -242,6 +274,10 @@ function Comment() {
 		}
 		let windowId = message.data;
 		if(windowId === 'keep-id') return;
+		if(windowId === null) {
+			removeStream();
+			return;
+		}
 		try{
 			const stream = await (navigator.mediaDevices as any).getUserMedia({
 				audio: false,
@@ -267,11 +303,22 @@ function Comment() {
 		const video = document.querySelector('video');
 		video.srcObject = stream;
 		video.onsuspend = () => {
-			handleStream(null);
+			removeStream();
 		}
 		video.onloadedmetadata = (e) => {
 			video.play();
 		}
+	}
+
+	const removeStream = () => {
+		const video = document.querySelector('video');
+		if (video.srcObject != null) {
+			(video.srcObject as MediaStream).getVideoTracks().forEach(track => {
+				track.stop();
+				(video.srcObject as MediaStream).removeTrack(track);
+			});
+		}
+		video.srcObject = null;
 	}
 
 	const close = () => {
