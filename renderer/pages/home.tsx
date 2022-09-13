@@ -140,7 +140,7 @@ function Home() {
 						認証コード
 					</InputGroup.Text>
 					<FormControl
-					placeholder="Please paste here(Ctrl+V)"
+					placeholder="Please paste here"
 					aria-label="Paste AuthenticationCode"
 					aria-describedby="basic-addon3"
 					value={key}
