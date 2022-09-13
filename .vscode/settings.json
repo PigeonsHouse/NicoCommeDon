@@ -4,5 +4,8 @@
 		"naka",
 		"nico",
 		"shita"
-	]
+	],
+	"yaml.schemas": {
+		"https://json.schemastore.org/github-workflow.json": "file:///hdd/Documents/C3/NicoCommeDon/.github/workflows/deploy.yml"
+	}
 }
