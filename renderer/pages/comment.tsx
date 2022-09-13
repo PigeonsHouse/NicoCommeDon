@@ -246,6 +246,10 @@ function Comment() {
 		}
 		let windowId = message.data;
 		if(windowId === 'keep-id') return;
+		if(windowId === null) {
+			removeStream();
+			return;
+		}
 		try{
 			const stream = await (navigator.mediaDevices as any).getUserMedia({
 				audio: false,
@@ -271,11 +275,22 @@ function Comment() {
 		const video = document.querySelector('video');
 		video.srcObject = stream;
 		video.onsuspend = () => {
-			handleStream(null);
+			removeStream();
 		}
 		video.onloadedmetadata = (e) => {
 			video.play();
 		}
+	}
+
+	const removeStream = () => {
+		const video = document.querySelector('video');
+		if (video.srcObject != null) {
+			(video.srcObject as MediaStream).getVideoTracks().forEach(track => {
+				track.stop();
+				(video.srcObject as MediaStream).removeTrack(track);
+			});
+		}
+		video.srcObject = null;
 	}
 
 	const close = () => {
